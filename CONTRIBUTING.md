@@ -1,3 +1,14 @@
+<!--
+GENERATED FILE—DO NOT EDIT HERE.
+
+Source: templates/CONTRIBUTING.md.template in the private tgwab-standards repo.
+Re-render:  scripts/render-contributing.sh TGWAB > CONTRIBUTING.md
+
+scripts/check-contributing-drift.sh compares this file against a fresh render on
+every tgwab-standards CI run and fails on any difference, so an edit made here is
+reverted rather than kept. Edit the template.
+-->
+
 # Contributing to the TGWAB estate
 
 This file exists because most of the rules that keep this estate working are
@@ -6,6 +17,35 @@ a different AI agent, or a future version of any of us, this is the short list �
 and every rule below was earned by something breaking.
 
 Read it before your first change. It is deliberately short.
+
+## Where this file reaches, and where it does not
+
+Measured 2026-09-06. A rules document that reaches nobody is worse than none,
+because it looks like coverage:
+
+- **On github.com, every repo under `TGWAB/`.** An owner-level `.github` repo
+  supplies a default `CONTRIBUTING.md` to every repo without one, and this is that
+  default — you are reading it because the repo that sent you here has no
+  `CONTRIBUTING.md` of its own. Both `MichalAFerber/.github` and `TGWAB/.github`
+  carry it, and `repos/<owner>/<repo>/community/profile` resolves `contributing`
+  to it.
+- **On disk, no repo.** A default community-health file is **not** cloned into the
+  repos it covers. Of 79 local clones, exactly one holds a `CONTRIBUTING.md`, and
+  it is that project's own — this file is on disk in **zero** of them.
+- **No agent loads it.** Grok reads `Agents.md`, `Claude.md`, `AGENT.md`, and
+  `AGENTS.md`, from `~/.grok/` and from the repo root down to the working
+  directory. Claude Code reads `CLAUDE.md`. `CONTRIBUTING.md` is in neither list,
+  under any name.
+
+So this is the **human** channel on github.com, and there it is complete. The agent
+channel is `AGENTS.md` / `CLAUDE.md`, and it is **per repo and not inherited**: a
+repo that wants an agent to follow these rules must carry its own file saying so.
+Do not assume an agent has read this file.
+
+**Because this is an inherited default, nothing in it describes any particular
+repo.** It cannot name a file beside it, a command that works here, or a check this
+repo runs — those claims would be false in most of the repos that serve this page.
+For anything repo-specific, read that repo's `README.md`.
 
 ---
 
@@ -61,13 +101,26 @@ forgotten; a draft cannot be merged.
 ## 4. Claims are part of the change
 
 An inaccurate claim in a code comment, commit message, PR body, review, or
-release note is a **defect in its own right**, not a style issue. This is
-DEV-STANDARDS §15 "trap 9", and it is enforced in review.
+release note is a **defect in its own right**, not a style issue. Two kinds
+fail differently, so they are checked differently.
 
-That means: **if you write a number, say how you counted it.** On one night a
-single question — "how many repos carry this rule?" — produced **11, 13, 14, 15,
-16 and 17** from six sincere instruments, every one of them believed at the time.
-A count without a method is not a weak finding; it is not a finding.
+**A claim about a mechanism** — why a line is safe, what a library does, what a
+check would report if you changed it — is DEV-STANDARDS §15 **trap 9**. Nothing
+this estate has can test it: lint, tests, and CI all report green while it is
+wrong, and "no non-comment line changed" states that the gates are blind to the
+change, not that it is safe. So a mechanism claim **MUST** be traced against
+control flow before it is written, and read in full, as prose, by someone who is
+not its author.
+
+**A number fails the opposite way: it is falsifiable — so falsify it, and say
+how.** On 2026-09-05 one question, *how many repos declare `eslint`*, produced
+**11, 13, and 16** from three sincere instruments in a single night. The answer
+is **17**, and it is recorded with its method because the method is what makes
+it trustworthy: a completed serial enumeration of every non-archived repo's
+default branch across both owners. A parallel run of the same 124 calls tripped
+GitHub's secondary rate limit and returned 13, because an empty response is
+indistinguishable from "declares no `eslint`." A count without a method is not a
+weak finding; it is not a finding.
 
 The same applies to citations. Open every `#N`, file path, and section reference
 you cite and confirm it says what you claim. A migration header once cited an
@@ -108,7 +161,11 @@ check is not a deploy.
 **And merging is not deploying.** Several repos here reach production only via a
 manual step. Say what you verified and what you did not.
 
-## 7. If you are working on a local clone
+## 7. Estate agents: the shared `~/GitHub` checkout
+
+*Scope: agents and maintainers working the estate's shared workstation clones.
+If you are an outside contributor working from your own fork or clone, none of
+this section applies to you — skip to 8.*
 
 Everything under `~/GitHub` is a **single checkout shared by several concurrent
 sessions**. Moving `HEAD` silently redirects someone else's work — a
@@ -147,9 +204,15 @@ git worktree add "$WT" <branch> && cd "$WT" || exit 1
 - Public + MIT is **Class A**; the class **MUST** appear in the README's first
   paragraph and match the `LICENSE`. A repo shipping MIT while its README calls
   itself internal is a contradiction that ships.
-- Every Class A/B repo needs a row in [`REGISTRY.md`](./REGISTRY.md) — that file,
-  not any local list, is the authority on what exists.
-- `main` is PR-protected in most repos. Branch, push, open a PR.
+- Every Class A/B repo needs a row in `REGISTRY.md` — that file, not any local
+  list, is the authority on what exists.
+- `main` is PR-protected in most repos. Branch, push, open a PR — and **open it
+  against the default branch**, unless it is deliberately stacked and carries the
+  `stacked-pr` label, in which case whoever merges it confirms the base itself
+  reaches the default branch. A PR merged into a non-default base reads
+  **Merged** in the UI, in `gh pr list`, and in the registry, while `main`
+  silently lacks the work, and nothing in the normal review surface shows the
+  gap.
 - Match the repo you are in. Its conventions beat your defaults.
 
 ---
@@ -161,5 +224,6 @@ Almost every rule above is a specific instance of that, and the estate's most
 common defect is not broken code — it is a check that reports success while
 doing nothing.
 
-Full standards: [`DEV-STANDARDS.md`](./DEV-STANDARDS.md). Product map:
-[`REGISTRY.md`](./REGISTRY.md).
+Full standards: `DEV-STANDARDS.md`. Product map: `REGISTRY.md`. Both live in the
+private `tgwab-standards` repo; they are named, not linked, so this file stays
+safe to republish.
