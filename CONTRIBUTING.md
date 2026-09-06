@@ -1,3 +1,14 @@
+<!--
+GENERATED FILE—DO NOT EDIT HERE.
+
+Source: templates/CONTRIBUTING.md.template in the private tgwab-standards repo.
+Re-render:  scripts/render-contributing.sh TGWAB > CONTRIBUTING.md
+
+scripts/check-contributing-drift.sh compares this file against a fresh render on
+every tgwab-standards CI run and fails on any difference, so an edit made here is
+reverted rather than kept. Edit the template.
+-->
+
 # Contributing to the TGWAB estate
 
 This file exists because most of the rules that keep this estate working are
@@ -7,34 +18,34 @@ and every rule below was earned by something breaking.
 
 Read it before your first change. It is deliberately short.
 
-**This file is not copy-safe by accident — it is copy-safe by design.** It is
-republished verbatim as the owner-level default for every repo that lacks its
-own, so it carries no relative links; the files it names live in the private
-`tgwab-standards` repo, and a link to them 404s for anyone outside it
-(DEV-STANDARDS §10: *a 404 link is worse than plain text*). Keep any edit
-paste-safe, so the copies can stay byte-identical and drift stays detectable.
-
 ## Where this file reaches, and where it does not
 
 Measured 2026-09-06. A rules document that reaches nobody is worse than none,
 because it looks like coverage:
 
-- **On github.com, every repo.** An owner-level `.github` repo supplies a
-  default `CONTRIBUTING.md` to every repo without one. Both
-  `MichalAFerber/.github` and `TGWAB/.github` carry this file, and
-  `repos/<owner>/<repo>/community/profile` resolves `contributing` to it.
-- **On disk, no repo.** A default community-health file is **not** cloned into
-  the repos it covers. Of 79 local clones, exactly one holds a
-  `CONTRIBUTING.md`, and it is that project's own — this file is on disk in
-  **zero** of them.
+- **On github.com, every repo under `TGWAB/`.** An owner-level `.github` repo
+  supplies a default `CONTRIBUTING.md` to every repo without one, and this is that
+  default — you are reading it because the repo that sent you here has no
+  `CONTRIBUTING.md` of its own. Both `MichalAFerber/.github` and `TGWAB/.github`
+  carry it, and `repos/<owner>/<repo>/community/profile` resolves `contributing`
+  to it.
+- **On disk, no repo.** A default community-health file is **not** cloned into the
+  repos it covers. Of 79 local clones, exactly one holds a `CONTRIBUTING.md`, and
+  it is that project's own — this file is on disk in **zero** of them.
 - **No agent loads it.** Grok reads `Agents.md`, `Claude.md`, `AGENT.md`, and
   `AGENTS.md`, from `~/.grok/` and from the repo root down to the working
-  directory. Claude Code reads `CLAUDE.md`. `CONTRIBUTING.md` is in neither
-  list, under any name.
+  directory. Claude Code reads `CLAUDE.md`. `CONTRIBUTING.md` is in neither list,
+  under any name.
 
-So this is the **human** channel on github.com, and there it is complete. The
-agent channel is `AGENTS.md` / `CLAUDE.md` — which is why this repo now carries
-an `AGENTS.md` pointing here. Do not assume an agent has read this file.
+So this is the **human** channel on github.com, and there it is complete. The agent
+channel is `AGENTS.md` / `CLAUDE.md`, and it is **per repo and not inherited**: a
+repo that wants an agent to follow these rules must carry its own file saying so.
+Do not assume an agent has read this file.
+
+**Because this is an inherited default, nothing in it describes any particular
+repo.** It cannot name a file beside it, a command that works here, or a check this
+repo runs — those claims would be false in most of the repos that serve this page.
+For anything repo-specific, read that repo's `README.md`.
 
 ---
 
@@ -201,7 +212,7 @@ git worktree add "$WT" <branch> && cd "$WT" || exit 1
   reaches the default branch. A PR merged into a non-default base reads
   **Merged** in the UI, in `gh pr list`, and in the registry, while `main`
   silently lacks the work, and nothing in the normal review surface shows the
-  gap. `templates/pr-base-guard.yml` is the gate.
+  gap.
 - Match the repo you are in. Its conventions beat your defaults.
 
 ---
