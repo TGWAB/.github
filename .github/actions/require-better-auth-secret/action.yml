@@ -1,0 +1,77 @@
+name: Require BETTER_AUTH_SECRET
+description: >-
+  Refuse to deploy a Cloudflare Worker whose bundle ships better-auth while no
+  session-signing secret is bound to it. A gate, not a warning: it exits non-zero.
+
+inputs:
+  api-token:
+    description: Cloudflare API token. Needs Workers Scripts Read (Write also satisfies it) to list the script's secret bindings.
+    required: true
+  account-id:
+    description: Cloudflare account id, when the token can see more than one account.
+    required: false
+    default: ''
+  working-directory:
+    description: Directory to run in — the one holding the Worker's package.json and node_modules.
+    required: false
+    default: '.'
+  config:
+    description: Path to the wrangler config, if the deploy step passes --config. Use the same value.
+    required: false
+    default: ''
+  environment:
+    description: wrangler environment, if the deploy step passes --env. Use the same value, or the gate reads a different script.
+    required: false
+    default: ''
+  names:
+    description: >-
+      Comma-separated binding names that satisfy the gate. The default covers every name
+      better-auth 1.7.4 reads for itself (BETTER_AUTH_SECRET, BETTER_AUTH_SECRETS, AUTH_SECRET).
+      Override only when the Worker passes `secret` to betterAuth() from a differently named binding.
+    required: false
+    default: BETTER_AUTH_SECRET,BETTER_AUTH_SECRETS,AUTH_SECRET
+  wrangler-command:
+    description: How to invoke wrangler.
+    required: false
+    default: npx --yes wrangler@4
+
+runs:
+  using: composite
+  steps:
+    # The artifact, not the source tree: what actually gets uploaded is what matters,
+    # and --dry-run needs no credentials. Kept out of the repo (RUNNER_TEMP) so it can
+    # never be mistaken for build output a later step should ship.
+    - name: Build the deployable bundle (no deploy)
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        GATE_CONFIG: ${{ inputs.config }}
+        GATE_ENV: ${{ inputs.environment }}
+        GATE_WRANGLER: ${{ inputs.wrangler-command }}
+      run: |
+        set -euo pipefail
+        outdir="$RUNNER_TEMP/better-auth-gate-bundle"
+        rm -rf "$outdir"
+        args=(deploy --dry-run --outdir "$outdir")
+        # `[ -n "$X" ] && args+=(…)` would exit the script under `set -e` whenever the
+        # test is false, skipping the build and taking the gate with it.
+        if [ -n "$GATE_CONFIG" ]; then args+=(--config "$GATE_CONFIG"); fi
+        if [ -n "$GATE_ENV" ]; then args+=(--env "$GATE_ENV"); fi
+        # shellcheck disable=SC2086
+        $GATE_WRANGLER "${args[@]}"
+        echo "BETTER_AUTH_GATE_BUNDLE=$outdir" >> "$GITHUB_ENV"
+
+    - name: Refuse to deploy better-auth without a session-signing secret
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ inputs.api-token }}
+        CLOUDFLARE_ACCOUNT_ID: ${{ inputs.account-id }}
+      run: |
+        set -euo pipefail
+        node "${{ github.action_path }}/guard.mjs" \
+          --bundle "$BETTER_AUTH_GATE_BUNDLE" \
+          --names "${{ inputs.names }}" \
+          --wrangler-command "${{ inputs.wrangler-command }}" \
+          ${{ inputs.config && format('--config "{0}"', inputs.config) || '' }} \
+          ${{ inputs.environment && format('--env "{0}"', inputs.environment) || '' }}
